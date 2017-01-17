@@ -7,13 +7,16 @@
 
 #include <string>
 #include <fstream>
+#include <map>
+#include <renderable.h>
+
 namespace webpp
 {
     class html_render
     {
      public:
       html_render(std::string template_name);
-      void render(int param_num, ...);
+      void render(const std::map<std::string, std::string>* const parameters = nullptr);
       friend std::ostream& operator<<(std::ostream, const html_render& render);
 
      private:

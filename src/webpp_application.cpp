@@ -7,8 +7,6 @@
 #include <fcgio.h>
 #include <webpp_application.h>
 
-#include <headers/http_message.h>
-
 using std::cin;
 using std::cout;
 using std::cerr;
@@ -20,51 +18,60 @@ namespace webpp
       streambuf *cout_streambuf = cout.rdbuf();
       streambuf *cerr_streambuf = cerr.rdbuf();
 
-      FCGX_Request request;
+      FCGX_Request cgi_request;
       FCGX_Init();
-      FCGX_InitRequest(&request, 0, 0);
-      while (FCGX_Accept_r(&request) == 0) {
-        fcgi_streambuf cin_fcgi_streambuf(request.in);
-        fcgi_streambuf cout_fcgi_streambuf(request.out);
-        fcgi_streambuf cerr_fcgi_streambuf(request.err);
-        char *param;
-        try {
-          param = FCGX_GetParam("Header", request.envp);
-        } catch (exception e) {
+      FCGX_InitRequest(&cgi_request, 0, 0);
+      while (FCGX_Accept_r(&cgi_request) == 0)
+      {
+        fcgi_streambuf cin_fcgi_streambuf(cgi_request.in);
+        fcgi_streambuf cout_fcgi_streambuf(cgi_request.out);
+        fcgi_streambuf cerr_fcgi_streambuf(cgi_request.err);
 
+        http_request request;
+
+        char** env = cgi_request.envp;
+        const string EQUAL_SIGN = "=";
+        while (*(env))
+        {
+          string kv_pair(*env);
+          size_t equal_idx = kv_pair.find(EQUAL_SIGN);
+          if (equal_idx == string::npos) break;
+          request.set_header(kv_pair.substr(0, equal_idx), kv_pair.substr(equal_idx+1));
+
+          env++;
         }
 
-        unsigned long content_length = 2048;
-        char *content_len_str = FCGX_GetParam("CONTENT_LENGTH", request.envp);
-        if (content_len_str) {
-          content_length = stol(content_len_str);
+        const string uri = request.get_header("REQUEST_URI");
+
+        auto iter = handlers.rbegin();
+        while (iter != handlers.rend())
+        {
+          if (iter->get()->get_path().compare(uri) == 0) break;
+          iter++;
+        }
+        if (iter == handlers.rend())
+        {
+          //TODO: handle error
         }
 
-        char_type *content_buff = new char_type[content_length];
-        cin.read(content_buff, content_length);
-        content_length = cin.gcount();
+        auto response = iter->get()->handle_request(request);
 
         cin.rdbuf(&cin_fcgi_streambuf);
         cout.rdbuf(&cout_fcgi_streambuf);
         cerr.rdbuf(&cerr_fcgi_streambuf);
 
         http_message responseMessage;
-        responseMessage.setHeader("Content-Type", "text/html");
-        string payload =
-            "<html>\n"
-                " <head>\n"
-                "   <title>Hello Title</title>\n"
-                " </head>\n"
-                " <body>\n"
-                "   <h1>Hello body, hot body</h1>\n"
-                " </body>\n"
-                "</html>\n";
-        responseMessage.setPayload(payload);
-        cout << responseMessage;
+        cout << response;
       }
 
       cin.rdbuf(cin_streambuf);
       cout.rdbuf(cout_streambuf);
       cerr.rdbuf(cerr_streambuf);
+    }
+
+
+    void webpp_application::register_handler(std::shared_ptr<path_handler> handle)
+    {
+      this->handlers.push_back(handle);
     }
 }

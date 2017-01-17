@@ -9,23 +9,21 @@
 
 namespace webpp
 {
-    static std::string pattern = R"ex(-\w*-)ex";
+    static std::string pattern = "\\$\\{(\\w*)\\}";
     html_render::html_render(std::string template_name)
     {
       p_file.open(template_name, std::ios::in);
     }
 
-    void html_render::render(int param_num, ...)
+    void html_render::render(const std::map<std::string, std::string>* const parameters)
     {
-      std::regex regex(pattern);
-      std::smatch result;
+      content = "";
+//      std::regex regex(pattern);
+//      std::smatch result;
       std::string line;
       while (std::getline(p_file, line))
       {
-        if (std::regex_search(line, result, regex))
-        {
-          std::cout << result.str();
-        }
+        content += line;
       }
     }
 }
