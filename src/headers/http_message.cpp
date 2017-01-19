@@ -38,4 +38,20 @@ namespace webpp
       stream << msg.payload;
       return stream;
     }
+
+    http_request::http_request(char **const envp){
+      const string EQUAL_SIGN = "=";
+      char** env = envp;
+      while (*env)
+      {
+        string kv_pair(*env);
+        size_t equal_idx = kv_pair.find(EQUAL_SIGN);
+        if (equal_idx != string::npos)
+        {
+          this->set_header(kv_pair.substr(0, equal_idx), kv_pair.substr(equal_idx+1));
+        }
+
+        env++;
+      }
+    }
 }
