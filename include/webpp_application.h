@@ -12,6 +12,8 @@ namespace webpp
 {
     class webpp_application {
      public:
+      webpp_application();
+      ~webpp_application();
       void start();
 
       void register_handler(std::shared_ptr<path_handler>);

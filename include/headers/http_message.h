@@ -40,6 +40,8 @@ namespace webpp
 
     class http_request : public http_message
     {
+     public:
+      http_request(char** const envp);
     };
 
     class http_response : public http_message
