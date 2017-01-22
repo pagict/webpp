@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <fcgio.h>
+#include <template_render.h>
 using namespace std;
 
 namespace webpp
@@ -26,15 +27,16 @@ namespace webpp
 
       void set_header(const string &key, const string &value);
 
-      void set_payload(const string &payload);
+//      void set_payload(const string &payload);
 
       const string& get_header(const string &key) const;
 
-      friend std::ostream &operator<<(std::ostream &stream, http_message const &msg);
+      friend std::ostream &operator<<(std::ostream &stream, const http_message &msg) ;
 
      protected:
       map<string, string> headers;
-      string payload;
+
+      string headers_string() const;
     };
 
 
@@ -46,6 +48,10 @@ namespace webpp
 
     class http_response : public http_message
     {
+     public:
+      friend std::ostream& operator<<(std::ostream &stream, const http_response& response);
+
+      template_render render;
     };
 }
 
