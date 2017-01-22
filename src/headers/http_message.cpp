@@ -2,6 +2,7 @@
 // Created by PengPremium on 17/1/8.
 //
 #include <headers/http_message.h>
+#include <sstream>
 
 namespace webpp
 {
@@ -19,24 +20,35 @@ namespace webpp
       it->second = value;
     }
 
-    void http_message::set_payload(const string &payload)
-    {
-      this->payload = payload;
-    }
+//    void http_message::set_payload(const string &payload)
+//    {
+//      this->payload = payload;
+//    }
 
     const string& http_message::get_header(const string &key) const
     {
       return headers.at(key);
     }
 
-    std::ostream &operator<<(std::ostream &stream, webpp::http_message const &msg)
+    std::ostream &operator<<(std::ostream &stream, const webpp::http_message &msg)
     {
-      for (auto it = msg.headers.cbegin(); it != msg.headers.cend(); it++) {
-        stream << it->first << ": " << it->second << "\r\n";
-      }
-      stream << "\r\n";
-      stream << msg.payload;
+      stream << msg.headers_string();
       return stream;
+    }
+
+    string http_message::headers_string() const
+    {
+      stringbuf buf;
+      for (auto it = this->headers.cbegin(); it != this->headers.cend(); it++)
+      {
+        buf.sputn(it->first.c_str(), it->first.length());
+        buf.sputn(": ", 2);
+        buf.sputn(it->second.c_str(), it->second.length());
+        buf.sputn("\r\n", 2);
+      }
+
+      buf.sputn("\r\n", 2);
+      return buf.str();
     }
 
     http_request::http_request(char **const envp){
@@ -53,5 +65,12 @@ namespace webpp
 
         env++;
       }
+    }
+
+    std::ostream& operator<<(std::ostream &stream, const http_response& response)
+    {
+      stream << response.headers_string();
+      stream << response.render;
+      return stream;
     }
 }

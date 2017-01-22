@@ -1,5 +1,5 @@
 #include <webpp_application.h>
-#include <html_render.h>
+#include <template_render.h>
 
 using namespace webpp;
 int main()
@@ -11,16 +11,7 @@ int main()
       http_response operator()(const http_request& request)
       {
         http_response response;
-        string payload =
-            "<html>\n"
-                " <head>\n"
-                "   <title>Hello Title</title>\n"
-                " </head>\n"
-                " <body>\n"
-                "   <h1>Hello body, hot body</h1>\n"
-                " </body>\n"
-                "</html>\n";
-        response.set_payload(payload);
+        response.render = template_render("src/templates/template.html");
         return response;
       }
   } rootHandler;
