@@ -57,7 +57,7 @@ namespace webpp
       while (std::getline(render.p_file, line))
       {
         bool need_replace = std::regex_search(line, result, ex);
-        size_t idx = -1;
+        long idx = -1;
         long length = -1;
         if (need_replace)
         {
