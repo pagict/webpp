@@ -16,10 +16,15 @@ namespace webpp
     {
      public:
       template_render() {}
+//      template_render(template_render& tr)
+//      {
+//        p_file = std::move(tr.p_file);
+//        variables = tr.variables;
+//      }
       template_render(std::string template_name);
 
-      void set_variable(const std::string& var_name, renderable& obj);
-      const renderable& get_variable(const std::string var_name) const;
+      void set_variable(const std::string& var_name,  std::shared_ptr<renderable> var_value);
+      const std::shared_ptr<renderable> get_variable(const std::string var_name) const;
       void remove_variable(const std::string var_name);
 
       friend std::ostream &operator<<(std::ostream &stream, const template_render &render);
@@ -27,7 +32,7 @@ namespace webpp
      private:
       mutable std::ifstream p_file;
 
-      std::map<std::string, renderable&> variables;
+      std::map<std::string, std::shared_ptr<renderable> > variables;
     };
 }
 #endif //WEBPP_HTML_RENDER_H
