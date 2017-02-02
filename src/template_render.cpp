@@ -16,12 +16,12 @@ namespace webpp
       p_file.open(template_name, std::ios::in);
     }
 
-    void template_render::set_variable(const std::string &var_name, renderable &obj)
+    void template_render::set_variable(const std::string &var_name, std::shared_ptr<renderable> obj)
     {
       variables.emplace(var_name, obj);
     }
 
-    const renderable& template_render::get_variable(const std::string var_name) const
+    const std::shared_ptr<renderable> template_render::get_variable(const std::string var_name) const
     {
       return variables.at(var_name);
     }
@@ -49,9 +49,33 @@ namespace webpp
 
       std::stringbuf stringbuf;
 
+      std::regex ex(pattern);
+      std::smatch result;
+
+
       std::string line;
-      while (std::getline(render.p_file, line)) {
-        stringbuf.sputn(line.c_str(), line.length());
+      while (std::getline(render.p_file, line))
+      {
+        bool need_replace = std::regex_search(line, result, ex);
+        long idx = -1;
+        long length = -1;
+        if (need_replace)
+        {
+          idx = result.position();
+          length = result.length();
+
+          stringbuf.sputn(line.substr(0, idx).c_str(), idx);
+
+          std::string key = result[1];
+          std::shared_ptr<renderable> v = render.variables.at(key);
+          std::string description = v->get_render_string();
+          stringbuf.sputn(description.c_str(), description.length());
+          stringbuf.sputn(line.substr(idx + length).c_str(), line.length() - idx - length);
+
+        } else
+        {
+          stringbuf.sputn(line.c_str(), line.length());
+        }
       }
 
       stream << stringbuf.str();

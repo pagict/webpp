@@ -1,5 +1,6 @@
 #include <webpp_application.h>
 #include <template_render.h>
+#include "string_renderable.h"
 
 using namespace webpp;
 int main()
@@ -12,6 +13,8 @@ int main()
       {
         http_response response;
         response.render = template_render("src/templates/template.html");
+        shared_ptr<renderable> title(new string_renderable("Hey title"));
+        response.render.set_variable("Title", title);
         return response;
       }
   } rootHandler;
